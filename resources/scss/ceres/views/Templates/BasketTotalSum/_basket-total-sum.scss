@@ -1,0 +1,26 @@
+.cmp-totals {
+    dt,
+    dd {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    dt {
+        width: 70%;
+    }
+
+    dd {
+        width: 30%;
+        text-align: right;
+    }
+
+    .rebate-hint {
+        color: $gray-600;
+    }
+
+    hr {
+        @include media-breakpoint-down(xs) {
+            margin: 5px 0;
+        }
+    }
+}

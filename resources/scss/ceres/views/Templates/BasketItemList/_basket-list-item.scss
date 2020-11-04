@@ -1,0 +1,87 @@
+// transitions for item lists
+.list-transition-enter-active,
+.list-transition-leave-active {
+    animation-name: item-leaving;
+    animation-duration: .175s;
+    animation-fill-mode: forwards;
+}
+
+.list-transition-enter-active {
+    animation-direction: reverse;
+}
+
+@keyframes item-leaving {
+    from { max-height: 1000px; }
+    to { max-height: 0; }
+}
+
+.basket-list-item {
+    position: relative;
+    overflow: hidden;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid $gray-300;
+    }
+
+    .image-container {
+        flex-shrink: 0;
+        width: 75px;
+        margin-right: 10px;
+
+        @include media-breakpoint-down(xs) {
+            width: 50px;
+        }
+    }
+
+    .meta-container {
+        width: 100%;
+        min-width: 0;
+
+        html.ie & { // stylelint-disable-line selector-no-qualifying-type
+            display: block;
+            float: left;
+            width: 65%;
+
+            @include media-breakpoint-down(lg) {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    }
+
+    .meta-container-wrapper {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .meta-container-wrapper-inner {
+        display: flex;
+
+        html.ie & { // stylelint-disable-line selector-no-qualifying-type
+            display: block;
+        }
+    }
+
+    .colon::after {
+        // TODO: maybe move to more general class
+        content: ":";
+    }
+}
+
+.basket-item-container-right {
+
+    .qty-box-container {
+        height: 41px;
+    }
+
+    html.ie & { // stylelint-disable-line selector-no-qualifying-type
+        display: block;
+        width: 35%;
+        margin-left: auto;
+
+        @include media-breakpoint-down(lg) {
+            display: flex;
+            width: 100%;
+        }
+    }
+}

@@ -1,0 +1,69 @@
+/// mimics the image-background: cover; behaviour but with img element
+///
+/// @author Bruno Fenzl
+///
+/// @example scss - Basic Usage HTML
+///     <div class="img-cover-container">
+///         img class="" src="">
+///     </div>
+@mixin img-cover {
+    position: relative;
+    overflow: hidden;
+
+    & > img {
+        position: absolute;
+        top: -9999px;
+        right: -9999px;
+        bottom: -9999px;
+        left: -9999px;
+        min-width: 100%;
+        min-height: 100%;
+        margin: auto;
+    }
+}
+
+/// mimics the image-background: contain; behaviour but with img element
+///
+/// @author Bruno Fenzl
+///
+/// @example scss - Basic Usage HTML
+///     <div class="img-contain-container">
+///         img src="">
+///     </div>
+@mixin img-contain {
+    position: relative;
+    overflow: hidden;
+
+    & > noscript,
+    a img,
+    .owl-carousel {
+        position: absolute;
+        top: -9999px;
+        right: -9999px;
+        bottom: -9999px;
+        left: -9999px;
+        width: auto;
+        max-width: 100%;
+        height: auto;
+        max-height: 100%;
+        margin: auto;
+    }
+
+    & .owl-carousel,
+    & .owl-stage-outer,
+    & .owl-stage,
+    & .owl-item {
+        height: 100%;
+    }
+}
+
+@mixin reset-list() {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+@mixin context-bg($color) {
+    color: color-yiq($color);
+    background-color: $color;
+}

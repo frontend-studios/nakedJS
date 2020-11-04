@@ -1,0 +1,43 @@
+.center-xy {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center; // center on the x axys
+
+    img,
+    .owl-stage-outer {
+        align-self: center; // center on the y axys
+    }
+}
+
+.not-found-text {
+    font-size: 115px;
+    text-shadow: 4px 3px 0 $gray-100, 9px 8px 0 $gray-300;
+}
+
+// TODO: resolve usages to .container
+.container-max {
+    @extend .container-fluid;
+    z-index: auto;
+    max-width: 1200px;
+}
+
+.overflow-x-hidden {
+    overflow-x: hidden;
+}
+
+a {
+    overflow-wrap: break-word;
+}
+
+.lozad {
+    display: block;
+    min-height: 1px;
+}
+
+// stylelint-disable selector-type-no-unknown
+[v-cloak],
+script2,
+style2 {
+    display: none !important; // stylelint-disable-line declaration-no-important
+}
+// stylelint-enable selector-type-no-unknown

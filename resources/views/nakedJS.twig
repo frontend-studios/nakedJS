@@ -1,0 +1,5 @@
+{% if services.template.getCurrentTemplate() == 'tpl.checkout' %}
+    <link rel="stylesheet" href="{{ plugin_path('nakedJS') }}/css/ceres-checkout.min.css">
+{% endif %}
+<link rel="preload" as="style" href="{{ plugin_path('nakedJS') }}/css/ceres-base.min.css">
+<link rel="stylesheet" href="{{ plugin_path('nakedJS') }}/css/ceres-base.min.css">
