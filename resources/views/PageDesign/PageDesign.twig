@@ -205,7 +205,7 @@
         isShopBuilder: {{ isShopBuilder | default(false) | json_encode }},
         bundleSetting: {{ webstoreConfig.dontSplitItemBundle | default(1) }},
         initialPleaseSelect: {{ webstoreConfig.attributeSelectDefaultOption | default(0) }},
-        publicPath: "{{ plugin_path('Ceres') ~ '/js/dist/' }}",
+        publicPath: "{{ plugin_path('nakedJS') ~ '/js/dist/' }}",
         isCheapestSorting: "{{ services.template.isCheapestSorting() }}",
         initialData: {
             shippingCountries: {{ services.country.getActiveCountriesList() | filterFields(["id", "currLangName", "isoCode2", "states.id", "states.name"]) | json_encode | raw }},
@@ -225,9 +225,9 @@
 {{ get_json_data() }}
 
 {% if ceresConfig.log.performanceLevel  == 'development' %}
-    <script src="{{ plugin_path('Ceres') }}/js/dist/{{ assetName }}.js?v={{ buildHash }}"></script>
+    <script src="{{ plugin_path('nakedJS') }}/js/dist/{{ assetName }}.js?v={{ buildHash }}"></script>
 {% else %}
-    <script src="{{ plugin_path('Ceres') }}/js/dist/{{ assetName }}.min.js?v={{ buildHash }}"></script>
+    <script src="{{ plugin_path('nakedJS') }}/js/dist/{{ assetName }}.min.js?v={{ buildHash }}"></script>
 {% endif %}
 
 {% for scriptTemplate in get_additional_scripts() %}
