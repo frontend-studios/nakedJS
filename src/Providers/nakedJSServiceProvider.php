@@ -26,6 +26,7 @@ class nakedJSServiceProvider extends TemplateServiceProvider
 
     public function boot(Dispatcher $dispatcher)
     {
+
            $this->overrideTemplate("Ceres::PageDesign.PageDesign", "nakedJS::PageDesign.PageDesign");
            $this->overrideTemplate("Ceres::PageDesign.Partials.Head", "nakedJS::PageDesign.Partials.Head");
 

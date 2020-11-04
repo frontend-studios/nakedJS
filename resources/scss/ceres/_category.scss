@@ -1,5 +1,7 @@
 @import "~bootstrap/scss/functions";
 @import "variables";
+@import "../../scss-custom/custom-variables";
+
 // ==========================================================================
 // External Libs
 // ==========================================================================
@@ -60,4 +62,3 @@
 
 // Widgets
 @import "widgets/widgets";
-
