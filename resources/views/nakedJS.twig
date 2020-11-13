@@ -1,4 +1,4 @@
-{% if services.template.getCurrentTemplate() == 'tpl.checkout' %}
+{% if services.template.getCurrentTemplate() == 'tpl.checkout' or 'tpl.my-account'%}
     <link rel="stylesheet" href="{{ plugin_path('nakedJS') }}/css/ceres-checkout.min.css">
 {% endif %}
 <link rel="preload" as="style" href="{{ plugin_path('nakedJS') }}/css/ceres-base.min.css">

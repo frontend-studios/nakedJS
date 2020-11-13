@@ -1,7 +1,13 @@
 #vue-app {
-    background: $brand-primary;
+    background: #F5f4f4;
 }
 
 .footer {
     background-color: $brand-secondary;
+}
+
+.single .title, .page-singleitem .title {
+       font-family: $font-family-heading;
+       font-size: 5rem;
+       color: $brand-primary;
 }

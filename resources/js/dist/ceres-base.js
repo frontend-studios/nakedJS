@@ -1176,7 +1176,11 @@ __webpack_require__.r(__webpack_exports__);
     }
 
   }
-});
+}); // document.onreadystatechange = function () {
+// 	if (document.readyState == "complete") {
+// 		alert('Complete');
+// 	}
+// }
 
 /***/ }),
 
@@ -1343,7 +1347,7 @@ __webpack_require__.r(__webpack_exports__);
     },
     timeout: {
       type: Number,
-      default: 200
+      default: 10
     }
   },
 
@@ -1399,7 +1403,7 @@ __webpack_require__.r(__webpack_exports__);
     },
 
     autocomplete(searchString) {
-      if (searchString.length >= 2) {
+      if (searchString.length >= 15) {
         this.$store.dispatch("loadItemSearchAutocomplete", searchString);
       } else {
         this.$store.commit("setAutocompleteResult", {
@@ -28130,7 +28134,9 @@ var render = function() {
         [
           _c(
             "div",
-            { staticClass: "single container-max page-content" },
+            {
+              staticClass: "single container-max page-content SingleNakedJS456"
+            },
             [
               _c("div", { staticClass: "row position-relative" }, [
                 _c(
@@ -46805,68 +46811,80 @@ const showShopNotification = function (event) {
 
 document.addEventListener("showShopNotification", showShopNotification);
 let headerParent = document.querySelector("[data-header-offset]");
-let headerLoaded = false;
-let allHeaderChildrenHeights = [];
 
 if (headerParent) {
+  let headerLoaded = false;
+  let allHeaderChildrenHeights = [];
+  let headerHeight = 0; // Calculate top offset for vue-app node because header is not part of document flow
+
   function calculateBodyOffset() {
     headerParent = headerParent.offsetParent ? headerParent : document.querySelector("[data-header-offset]");
 
     if (headerLoaded && headerParent) {
       const vueApp = document.getElementById("vue-app");
-      let bodyOffset = 0;
+      vueApp.style.marginTop = headerHeight + "px";
+      vueApp.style.minHeight = "calc(100vh - " + headerHeight + "px)";
+    }
+  } // Set descending z-index for all header elements and create list of elements with unfixed class for later use
+
+
+  function prepareHeaderElements() {
+    if (headerLoaded && !App.isShopBuilder) {
+      headerParent = headerParent.offsetParent ? headerParent : document.querySelector("[data-header-offset]");
+      let zIndex = 100;
 
       for (let i = 0; i < headerParent.children.length; i++) {
-        bodyOffset += headerParent.children[i].getBoundingClientRect().height;
+        const elem = headerParent.children[i];
+        elem.style.zIndex = zIndex;
+        zIndex--;
       }
-
-      vueApp.style.marginTop = bodyOffset + "px";
-      vueApp.style.minHeight = "calc(100vh - " + bodyOffset + "px)";
     }
-  }
+  } // Collect heights of header elements for later use
 
-  function getHeaderChildrenHeights() {
+
+  function getHeaderHeights() {
     headerParent = headerParent.offsetParent ? headerParent : document.querySelector("[data-header-offset]");
     allHeaderChildrenHeights = [];
+    headerHeight = 0;
 
     for (let i = 0; i < headerParent.children.length; i++) {
-      allHeaderChildrenHeights.push(headerParent.children[i].getBoundingClientRect().height);
+      const elementHeight = headerParent.children[i].getBoundingClientRect().height;
+      allHeaderChildrenHeights.push(elementHeight);
+      headerHeight += elementHeight;
     }
-  }
+  } // Scroll header elements depending on if they are unfixed or not
+
 
   function scrollHeaderElements() {
-    headerParent = headerParent.offsetParent ? headerParent : document.querySelector("[data-header-offset]");
-
     if (headerLoaded && !App.isShopBuilder) {
+      headerParent = headerParent.offsetParent ? headerParent : document.querySelector("[data-header-offset]");
       let absolutePos = 0;
       let fixedElementsHeight = 0;
       let offset = 0;
       const scrollTop = window.pageYOffset;
-      let zIndex = 100;
 
       for (let i = 0; i < headerParent.children.length; i++) {
         const elem = headerParent.children[i];
         const elemHeight = allHeaderChildrenHeights[i];
         offset = absolutePos - scrollTop;
-        elem.style.position = "absolute";
-        elem.style.zIndex = zIndex;
-        zIndex--;
+        elem.style.position = "absolute"; // Element is unfixed and should scroll indefinetly
 
-        if (!elem.classList.contains("unfixed")) {
-          if (offset < 0) {
-            elem.style.top = 0;
-          } else {
-            elem.style.top = offset + "px";
-          }
-
-          if (fixedElementsHeight > 0 && offset < fixedElementsHeight) {
-            elem.style.top = fixedElementsHeight + "px";
-          }
-
-          fixedElementsHeight = fixedElementsHeight + elemHeight;
-        } else {
+        if (elem.classList.contains("unfixed")) {
           elem.style.top = offset + "px";
-        }
+        } // Element is fixed and should scroll until it hits top of header or next fixed element
+        else {
+            if (offset < 0) {
+              elem.style.top = 0;
+            } else {
+              elem.style.top = offset + "px";
+            }
+
+            if (fixedElementsHeight > 0 && offset < fixedElementsHeight) {
+              elem.style.top = fixedElementsHeight + "px";
+            }
+
+            fixedElementsHeight = fixedElementsHeight + elemHeight;
+          }
 
         absolutePos = absolutePos + elemHeight;
       }
@@ -46874,29 +46892,36 @@ if (headerParent) {
   }
 
   window.addEventListener("resize", Object(_helper_debounce__WEBPACK_IMPORTED_MODULE_1__["debounce"])(function () {
+    getHeaderHeights();
     calculateBodyOffset();
-    getHeaderChildrenHeights();
     scrollHeaderElements();
   }, 50));
   window.addEventListener("load", function () {
+    getHeaderHeights();
     calculateBodyOffset();
-    getHeaderChildrenHeights();
+    prepareHeaderElements();
     scrollHeaderElements();
+    let timeout;
+    window.addEventListener("scroll", function () {
+      if (timeout) {
+        window.cancelAnimationFrame(timeout);
+      }
+
+      timeout = window.requestAnimationFrame(scrollHeaderElements);
+    }, Object(_helper_featureDetect__WEBPACK_IMPORTED_MODULE_4__["detectPassiveEvents"])() ? {
+      passive: true
+    } : false);
   });
 
   if (document.fonts) {
     document.fonts.onloadingdone = function (evt) {
+      getHeaderHeights();
       calculateBodyOffset();
-      getHeaderChildrenHeights();
+      prepareHeaderElements();
       scrollHeaderElements();
     };
   }
 
-  window.addEventListener("scroll", Object(_helper_debounce__WEBPACK_IMPORTED_MODULE_1__["debounce"])(function () {
-    scrollHeaderElements();
-  }, 10), Object(_helper_featureDetect__WEBPACK_IMPORTED_MODULE_4__["detectPassiveEvents"])() ? {
-    passive: true
-  } : false);
   $(document).on("shopbuilder.before.viewUpdate shopbuilder.after.viewUpdate", function () {
     calculateBodyOffset();
   });
@@ -46918,9 +46943,9 @@ if (headerParent) {
   })).then(function () {
     // Initialize
     headerLoaded = true;
-    getHeaderChildrenHeights();
-    scrollHeaderElements();
+    getHeaderHeights();
     calculateBodyOffset();
+    scrollHeaderElements();
   });
   calculateBodyOffset();
 }
@@ -51366,6 +51391,16 @@ const mutations = {
 
   setVariationMarkInvalidProps(state, markFields) {
     state.variationMarkInvalidProperties = !!markFields;
+  },
+
+  setVariationPropertySurcharges(state, basePrice) {
+    if (state.variation.documents[0].data.properties) {
+      for (const property of state.variation.documents[0].data.properties) {
+        if (!Object(_helper_utils__WEBPACK_IMPORTED_MODULE_0__["isNullOrUndefined"])(property.property.percentage) && property.surcharge <= 0) {
+          property.property.surcharge = basePrice * property.property.percentage / 100;
+        }
+      }
+    }
   }
 
 };
@@ -51430,7 +51465,7 @@ const actions = {
 
 };
 const getters = {
-  variationPropertySurcharge(state) {
+  variationPropertySurcharge(state, getters) {
     if (!state || !state.variation.documents) {
       return 0;
     }
@@ -51443,7 +51478,12 @@ const getters = {
       });
 
       for (const property of addedProperties) {
-        sum += property.surcharge || property.property.surcharge;
+        if (!Object(_helper_utils__WEBPACK_IMPORTED_MODULE_0__["isNullOrUndefined"])(property.property.percentage) && property.surcharge <= 0) {
+          const surcharge = getters.variationBasePrice * property.property.percentage / 100;
+          sum += surcharge;
+        } else {
+          sum += property.surcharge || property.property.surcharge;
+        }
       }
     }
 
@@ -51472,21 +51512,24 @@ const getters = {
     return returnPrice || calculatedPrices.default;
   },
 
-  variationTotalPrice(state, getters, rootState, rootGetters) {
+  variationBasePrice(state, getters, rootState, rootGetters) {
     if (getters.currentItemVariation.item.itemType === "set") {
       return rootGetters.itemSetTotalPrice;
     } else if (getters.currentItemVariation.item.itemType !== "set" && rootState.items.isItemSet) {
-      return state.variation.documents[0].data.prices.set.price.value + getters.variationPropertySurcharge;
+      return state.variation.documents[0].data.prices.set.price.value;
     } else {
       const graduatedPrice = getters.variationGraduatedPrice ? getters.variationGraduatedPrice.unitPrice.value : 0;
 
       if (!Object(_helper_utils__WEBPACK_IMPORTED_MODULE_0__["isNullOrUndefined"])(graduatedPrice) && state.variation.documents) {
-        const specialOfferPrice = vue__WEBPACK_IMPORTED_MODULE_2___default.a.filter("specialOffer").apply(Object, [graduatedPrice, state.variation.documents[0].data.prices, "price", "value"]);
-        return specialOfferPrice === "N / A" ? specialOfferPrice : getters.variationPropertySurcharge + specialOfferPrice;
+        return vue__WEBPACK_IMPORTED_MODULE_2___default.a.filter("specialOffer").apply(Object, [graduatedPrice, state.variation.documents[0].data.prices, "price", "value"]);
       }
     }
 
     return null;
+  },
+
+  variationTotalPrice(state, getters) {
+    return getters.variationBasePrice + getters.variationPropertySurcharge;
   },
 
   variationGroupedProperties(state) {

@@ -555,7 +555,7 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("article", { staticClass: "cmp cmp-product-thumb nakedJS123" }, [
+  return _c("article", { staticClass: "cmp cmp-product-thumb nakedJS456" }, [
     _c(
       "div",
       { class: _vm.paddingClasses, style: _vm.paddingInlineStyles },

@@ -332,6 +332,7 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
     quantity(value) {
       if (!Object(_helper_utils__WEBPACK_IMPORTED_MODULE_2__["isNullOrUndefined"])(this.itemId)) {
         this.$store.commit(`${this.itemId}/setVariationOrderQuantity`, value);
+        this.$store.commit(`${this.itemId}/setVariationPropertySurcharges`, this.$store.getters[`${this.itemId}/variationBasePrice`]);
       }
     },
 

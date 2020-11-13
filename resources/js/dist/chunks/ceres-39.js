@@ -96,6 +96,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 
 
 
@@ -166,6 +170,7 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
      * prop 'forceContent' with value true will return all units, without filtering
      */
     possibleUnits() {
+      // use an object, to make the entries unique
       const possibleUnits = {};
       const variations = this.forceContent ? this.variations : this.filterVariations(null, null, null, true);
 
@@ -174,6 +179,10 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
       }
 
       return possibleUnits;
+    },
+
+    possibleUnitCombinationIds() {
+      return this.transformPossibleUnits(this.possibleUnits).map(value => value[0]);
     },
 
     isContentVisible() {
@@ -186,10 +195,6 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
 
     attributes() {
       return this.currentVariationSelect && this.currentVariationSelect.attributes;
-    },
-
-    units() {
-      return this.currentVariationSelect && this.currentVariationSelect.units;
     },
 
     selectedAttributes() {
@@ -243,7 +248,7 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
         this.unsetInvalidSelection(attributeId, attributeValueId, unitId);
       }
 
-      this.lastContentCount = Object.keys(this.possibleUnits).length;
+      this.lastContentCount = this.possibleUnitCombinationIds.length;
     },
 
     /**
@@ -254,7 +259,7 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
      */
     unsetInvalidSelection(attributeId, attributeValueId, unitId) {
       const qualifiedVariations = this.getQualifiedVariations(attributeId, attributeValueId, unitId);
-      const closestVariation = this.getClosestVariation(qualifiedVariations);
+      const closestVariation = this.getClosestVariations(qualifiedVariations)[0];
 
       if (!closestVariation) {
         return;
@@ -265,7 +270,7 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
     },
 
     getTooltip(attribute, attributeValue) {
-      if (!this.isAttributeSelectionValid(attribute.attributeId, attributeValue.attributeValueId)) {
+      if (!this.isAttributeSelectionValid(attribute.attributeId, attributeValue.attributeValueId, true)) {
         return this.getInvalidOptionTooltip(attribute.attributeId, attributeValue.attributeValueId);
       } else if (attribute.type === "image") {
         return this.$translate("Ceres::Template.singleItemAttributeTooltip", {
@@ -284,13 +289,20 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
      */
     getInvalidOptionTooltip(attributeId, attributeValueId) {
       const qualifiedVariations = this.getQualifiedVariations(attributeId, attributeValueId);
-      const closestVariation = this.getClosestVariation(qualifiedVariations);
+      const closestVariations = this.getClosestVariations(qualifiedVariations);
 
-      if (!closestVariation) {
+      if (!closestVariations || closestVariations.length <= 0) {
         return "";
       }
 
-      const invalidSelection = this.getInvalidSelectionByVariation(closestVariation);
+      const invalidSelections = [!!closestVariations[0] ? this.getInvalidSelectionByVariation(closestVariations[0]) : null, !!closestVariations[1] ? this.getInvalidSelectionByVariation(closestVariations[1]) : null];
+
+      if (!!invalidSelections[0] && !!invalidSelections[1] && invalidSelections[0].attributesToReset.length > invalidSelections[1].attributesToReset.length) {
+        // there is a non-salable variation with less changes
+        return this.$translate("Ceres::Template.singleItemNotSalable");
+      }
+
+      const invalidSelection = invalidSelections[0] || invalidSelections[1];
       const names = [];
 
       for (const attribute of invalidSelection.attributesToReset) {
@@ -331,19 +343,19 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
     },
 
     /**
-     * returns a variation, where a minimum of changes in the selection is required to archive
+     * return a salable and a non-salable variation with the minimum number of changes on attributes compared to the current selection.
      * @param {array} qualifiedVariations
      */
-    getClosestVariation(qualifiedVariations) {
-      let closestVariation;
-      let numberOfRequiredChanges;
+    getClosestVariations(qualifiedVariations) {
+      let closestSalableVariation, numberOfSalableChanges;
+      let closestNonSalableVariation, numberOfNonSalableChanges;
 
       for (const variation of qualifiedVariations) {
         let changes = 0;
 
         if (variation.unitCombinationId !== this.selectedUnit && !Object(_helper_utils__WEBPACK_IMPORTED_MODULE_1__["isNull"])(this.selectedUnit)) {
           // when the unit dropdown isn't visible, it should have a lower weight for reset investigations
-          const unitWeight = Object.keys(this.possibleUnits).length > 1 && this.isContentVisible ? 0.9 : 0.1;
+          const unitWeight = this.possibleUnitCombinationIds.length > 1 && this.isContentVisible ? 0.9 : 0.1;
           changes += unitWeight;
         }
 
@@ -353,13 +365,16 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
           }
         }
 
-        if (!numberOfRequiredChanges || changes < numberOfRequiredChanges) {
-          closestVariation = variation;
-          numberOfRequiredChanges = changes;
+        if (variation.isSalable && (!numberOfSalableChanges || changes < numberOfSalableChanges)) {
+          closestSalableVariation = variation;
+          numberOfSalableChanges = changes;
+        } else if (!variation.isSalable && (!numberOfNonSalableChanges || changes < numberOfNonSalableChanges)) {
+          closestNonSalableVariation = variation;
+          numberOfNonSalableChanges = changes;
         }
       }
 
-      return closestVariation;
+      return [closestSalableVariation, closestNonSalableVariation];
     },
 
     /**
@@ -408,7 +423,7 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
       }
 
       if (invalidSelection.newUnit) {
-        if (this.lastContentCount > 1 && Object.keys(this.possibleUnits).length > 1 && !Object(_helper_utils__WEBPACK_IMPORTED_MODULE_1__["isNull"])(this.selectedUnit)) {
+        if (this.lastContentCount > 1 && this.possibleUnitCombinationIds.length > 1 && !Object(_helper_utils__WEBPACK_IMPORTED_MODULE_1__["isNull"])(this.selectedUnit)) {
           messages.push(this.$translate("Ceres::Template.singleItemNotAvailable", {
             name: this.$translate("Ceres::Template.singleItemContent")
           }));
@@ -472,8 +487,9 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
      * returns true, if the selection with a new attribute value would be valid
      * @param {number} attributeId
      * @param {[number, string, null]} attributeValueId
+     * @param {boolean} filterSalableVariations
      */
-    isAttributeSelectionValid(attributeId, attributeValueId) {
+    isAttributeSelectionValid(attributeId, attributeValueId, filterSalableVariations) {
       attributeValueId = parseInt(attributeValueId) || null;
 
       if (this.selectedAttributes[attributeId] === attributeValueId) {
@@ -483,7 +499,13 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
       const selectedAttributes = JSON.parse(JSON.stringify(this.selectedAttributes));
       selectedAttributes[attributeId] = parseInt(attributeValueId) || null;
       const ignoreUnit = !(Object.keys(this.possibleUnits).length > 1 && this.isContentVisible);
-      return !!this.filterVariations(selectedAttributes, null, null, ignoreUnit).length;
+      let variations = this.filterVariations(selectedAttributes, null, null, ignoreUnit);
+
+      if (filterSalableVariations) {
+        variations = variations.filter(variation => variation.isSalable);
+      }
+
+      return variations.length > 0;
     },
 
     /**
@@ -497,7 +519,7 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
         return true;
       }
 
-      return !!this.filterVariations(null, unitId).length;
+      return this.filterVariations(null, unitId).filter(variation => variation.isSalable).length > 0;
     },
 
     /**
@@ -542,6 +564,43 @@ const NotificationService = __webpack_require__(/*! ../../services/NotificationS
       }
 
       return this.$translate("Ceres::Template.singleItemNoSelection");
+    },
+
+    transformPossibleUnits(possibleUnits) {
+      return Object.entries(possibleUnits).sort((unitA, unitB) => {
+        unitA = this.splitUnitName(unitA[1]);
+        unitB = this.splitUnitName(unitB[1]); // order by unit
+
+        if (unitA[1] < unitB[1]) {
+          return -1;
+        }
+
+        if (unitA[1] > unitB[1]) {
+          return 1;
+        } // order by content (count)
+
+
+        if (unitA[0] < unitB[0]) {
+          return -1;
+        }
+
+        if (unitA[0] > unitB[0]) {
+          return 1;
+        }
+
+        return 0;
+      });
+    },
+
+    splitUnitName(unitName) {
+      const unitNameSplit = unitName.split(" ");
+
+      if (!isNaN(unitNameSplit[0])) {
+        unitNameSplit[0] = unitNameSplit[0].replace(App.currencyPattern.separator_thousands, "");
+        unitNameSplit[0] = parseInt(unitNameSplit[0]);
+      }
+
+      return unitNameSplit;
     }
 
   },
@@ -577,7 +636,7 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", [
     _vm.attributes.length ||
-    (Object.keys(_vm.possibleUnits).length > 1 && _vm.isContentVisible)
+    (_vm.possibleUnitCombinationIds.length > 1 && _vm.isContentVisible)
       ? _c(
           "div",
           { staticClass: "row" },
@@ -661,12 +720,30 @@ var render = function() {
                                 [
                                   _vm.isAttributeSelectionValid(
                                     attribute.attributeId,
-                                    value.attributeValueId
+                                    value.attributeValueId,
+                                    true
                                   )
                                     ? [
                                         _vm._v(
                                           "\n                            " +
                                             _vm._s(value.name) +
+                                            "\n                        "
+                                        )
+                                      ]
+                                    : _vm.isAttributeSelectionValid(
+                                        attribute.attributeId,
+                                        value.attributeValueId,
+                                        false
+                                      )
+                                    ? [
+                                        _vm._v(
+                                          "\n                            " +
+                                            _vm._s(
+                                              _vm.$translate(
+                                                "Ceres::Template.singleItemNotSalableAttribute",
+                                                { name: value.name }
+                                              )
+                                            ) +
                                             "\n                        "
                                         )
                                       ]
@@ -780,7 +857,8 @@ var render = function() {
                                       ] === null,
                                     invalid: !_vm.isAttributeSelectionValid(
                                       attribute.attributeId,
-                                      null
+                                      null,
+                                      true
                                     )
                                   },
                                   on: {
@@ -827,7 +905,8 @@ var render = function() {
                                     ],
                                   invalid: !_vm.isAttributeSelectionValid(
                                     attribute.attributeId,
-                                    value.attributeValueId
+                                    value.attributeValueId,
+                                    true
                                   )
                                 },
                                 attrs: {
@@ -871,7 +950,7 @@ var render = function() {
               ])
             }),
             _vm._v(" "),
-            Object.keys(_vm.possibleUnits).length > 1 && _vm.isContentVisible
+            _vm.possibleUnitCombinationIds.length > 1 && _vm.isContentVisible
               ? _c("div", { staticClass: "col-12 variation-select" }, [
                   _c("div", { staticClass: "input-unit" }, [
                     _c(
@@ -884,21 +963,26 @@ var render = function() {
                           }
                         }
                       },
-                      _vm._l(_vm.possibleUnits, function(unit, unitId) {
+                      _vm._l(_vm.possibleUnitCombinationIds, function(
+                        unitCombinationId
+                      ) {
                         return _c(
                           "option",
                           {
                             domProps: {
-                              value: unitId,
-                              selected: parseInt(unitId) === _vm.selectedUnit
+                              value: unitCombinationId,
+                              selected:
+                                parseInt(unitCombinationId) === _vm.selectedUnit
                             }
                           },
                           [
-                            _vm.isUnitSelectionValid(unitId)
+                            _vm.isUnitSelectionValid(unitCombinationId)
                               ? [
                                   _vm._v(
                                     "\n                            " +
-                                      _vm._s(unit) +
+                                      _vm._s(
+                                        _vm.possibleUnits[unitCombinationId]
+                                      ) +
                                       "\n                        "
                                   )
                                 ]
@@ -908,7 +992,12 @@ var render = function() {
                                       _vm._s(
                                         _vm.$translate(
                                           "Ceres::Template.singleItemInvalidAttribute",
-                                          { name: unit }
+                                          {
+                                            name:
+                                              _vm.possibleUnits[
+                                                unitCombinationId
+                                              ]
+                                          }
                                         )
                                       ) +
                                       "\n                        "

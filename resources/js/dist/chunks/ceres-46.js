@@ -103,7 +103,7 @@ __webpack_require__.r(__webpack_exports__);
   computed: {
     classNames() {
       // in the shopbuilder we need to hide the popper completely, to hide the dropzone
-      const hideClass = App.isShopBuilder ? "d-none" : "hidden";
+      const hideClass = App.isShopBuilder ? " d-none" : " hidden";
       return this.popoverClass + (!this.isVisible ? hideClass : "");
     }
 

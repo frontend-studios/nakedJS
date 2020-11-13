@@ -1,0 +1,41 @@
+[
+    "images.*",
+
+    "item.id",
+    "item.itemType",
+    "item.manufacturer.externalName",
+    "item.manufacturer.position",
+    "item.storeSpecial",
+
+    "texts.lang",
+    "texts.name1",
+    "texts.name2",
+    "texts.name3",
+
+    "bundleComponents.*",
+
+    "defaultCategories",
+
+    "variation.id",
+    "variation.name",
+    "variation.availability.names.name",
+    "variation.availability.names.lang",
+    "variation.availability.id",
+    "variation.availability.averageDays",
+    "variation.minimumOrderQuantity",
+    "variation.maximumOrderQuantity",
+    "variation.intervalOrderQuantity",
+    "variation.itemId",
+    "variation.mayShowUnitPrice",
+    "variation.releasedAt",
+    "variation.bundleType",
+
+    "filter.hasChildren",
+    "filter.isSalable",
+    "filter.hasActiveChildren",
+
+    "unit.content",
+    "unit.names.name",
+    "unit.names.lang",
+    "unit.unitOfMeasurement"
+]

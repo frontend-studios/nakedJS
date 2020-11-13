@@ -1,5 +1,5 @@
 <template>
-    <article class="cmp cmp-product-thumb nakedJS123">
+    <article class="cmp cmp-product-thumb nakedJS456">
         <div :class="paddingClasses" :style="paddingInlineStyles">
 
             <add-to-basket

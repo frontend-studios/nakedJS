@@ -1,2 +1,17 @@
-$brand-primary: 		#000;
-$brand-secondary: 		#DDD;
+//
+// BrandColor
+//
+$brand-primary: red;
+$primary: $brand-primary;
+$brand-secondary: orange;
+$secondary: orange;
+
+$top-bar-basket-btn: $brand-primary;
+
+//
+// Typography
+@import url('https://fonts.googleapis.com/css2?family=Goldman&display=swap');
+//
+$font-family-sans-serif:    'Roboto', helvetica, arial, sans-serif;
+$font-family-serif:         georgia, "Times New Roman", times, serif;
+$font-family-heading:       'Goldman', cursive;

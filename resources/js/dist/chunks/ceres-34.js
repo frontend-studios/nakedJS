@@ -263,6 +263,8 @@ __webpack_require__.r(__webpack_exports__);
         } else {
           this.$emit("out-of-stock", false);
         }
+      } else {
+        this.$emit("out-of-stock", false);
       }
 
       this.setValue(this.compMin);
